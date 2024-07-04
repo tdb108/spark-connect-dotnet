@@ -126,7 +126,7 @@ public class DataFrameWriter
             {
                 WriteOperation = new WriteOperation
                 {
-                    Mode = WriteOperation.Types.SaveMode.Overwrite,
+                    Mode = _saveMode,
                     Source = format,
                     Options = { options },
                     Input = _what.Relation,
