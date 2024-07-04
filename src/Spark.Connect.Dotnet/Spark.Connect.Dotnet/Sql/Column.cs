@@ -1527,7 +1527,38 @@ public class Column
         {
             UnresolvedFunction = new Expression.Types.UnresolvedFunction
             {
-                FunctionName = "in", IsUserDefinedFunction = false, IsDistinct = false
+                FunctionName = "in",
+                IsUserDefinedFunction = false,
+                IsDistinct = false
+            }
+        };
+
+        expression.UnresolvedFunction.Arguments.Add(Expression);
+
+        foreach (var o in cols)
+        {
+            if (o is Column col)
+            {
+                expression.UnresolvedFunction.Arguments.Add(col.Expression);
+            }
+
+            expression.UnresolvedFunction.Arguments.Add(Functions.Lit(o).Expression);
+        }
+
+        return new Column(expression);
+
+    }
+
+
+    public Column IsIn(List<object> cols)
+    {
+        var expression = new Expression
+        {
+            UnresolvedFunction = new Expression.Types.UnresolvedFunction
+            {
+                FunctionName = "in",
+                IsUserDefinedFunction = false,
+                IsDistinct = false
             }
         };
         
