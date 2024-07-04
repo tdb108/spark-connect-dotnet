@@ -354,6 +354,11 @@ public class DataFrame
              
         };
     
+    public DataFrame Persist()
+    {
+        return Persist(SparkStorageLevel.MEMORY_AND_DISK);
+    }
+
     public DataFrame Persist(SparkStorageLevel storageLevel)
     {
         return new DataFrame(_session, GrpcInternal.Persist(_session, Relation, StorageLevels[storageLevel]));
