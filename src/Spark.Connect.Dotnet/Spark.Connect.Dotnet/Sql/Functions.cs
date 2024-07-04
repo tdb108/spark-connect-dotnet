@@ -2,6 +2,18 @@ namespace Spark.Connect.Dotnet.Sql;
 
 public partial class Functions : FunctionsWrapper
 {
+    public static DateTime FromUnixTime(long unixTime)
+    {
+        var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        return epoch.AddMilliseconds(unixTime);
+    }
+
+    public static long ToUnixTime(DateTime date)
+    {
+        var epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        return Convert.ToInt64((date - epoch).TotalMilliseconds);
+    }
+
     /// <Summary>Asc</Summary>
     public static Column Asc(string col)
     {
@@ -217,7 +229,7 @@ public partial class Functions : FunctionsWrapper
     ///     MinBy
     ///     Returns the value associated with the minimum value of ord.
     /// </Summary>
-    public static Column 
+    public static Column
         MinBy(string col, string ord)
     {
         return new Column(FunctionWrappedCall("min_by", false, col, ord));
@@ -3358,8 +3370,8 @@ public partial class Functions : FunctionsWrapper
     {
         return new Column(FunctionWrappedCall("array", false, cols));
     }
-    
-    
+
+
 
     /// <Summary>Array</Summary>
     public static Column Array()
@@ -4352,6 +4364,6 @@ public partial class Functions : FunctionsWrapper
     {
         return new Column(FunctionWrappedCall("check_field", false, Col(field), fieldName));
     }
-    
-    
+
+
 }
