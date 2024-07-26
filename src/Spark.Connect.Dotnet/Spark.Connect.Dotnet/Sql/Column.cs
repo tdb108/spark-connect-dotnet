@@ -1285,7 +1285,7 @@ public class Column
         {
             Literal = new Expression.Types.Literal
             {
-                Timestamp = Functions.ToUnixTime(value)
+                String = value.ToString("yyyy-MM-dd HH:mm:ss.fff")
             }
         };
 
