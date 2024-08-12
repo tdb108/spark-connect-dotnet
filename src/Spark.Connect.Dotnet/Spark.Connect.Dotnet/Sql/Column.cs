@@ -1403,6 +1403,23 @@ public class Column
         return new Column(expression);
     }
 
+    public Column IsNotNull()
+    {
+        var expression = new Expression
+        {
+            UnresolvedFunction = new Expression.Types.UnresolvedFunction
+            {
+                FunctionName = "isnotnull",
+                IsUserDefinedFunction = false,
+                IsDistinct = false
+            }
+        };
+
+        expression.UnresolvedFunction.Arguments.Add(Expression);
+
+        return new Column(expression);
+    }
+
     public Column EndsWith(string other)
     {
         var expression = new Expression
@@ -1634,32 +1651,14 @@ public class Column
 
     public Column IsIn(params object[] cols)
     {
-        var expression = new Expression
-        {
-            UnresolvedFunction = new Expression.Types.UnresolvedFunction
-            {
-                FunctionName = "in",
-                IsUserDefinedFunction = false,
-                IsDistinct = false
-            }
-        };
-
-        expression.UnresolvedFunction.Arguments.Add(Expression);
-
-        foreach (var o in cols)
-        {
-            if (o is Column col)
-            {
-                expression.UnresolvedFunction.Arguments.Add(col.Expression);
-            }
-
-            expression.UnresolvedFunction.Arguments.Add(Functions.Lit(o).Expression);
-        }
-
-        return new Column(expression);
-
+        return IsIn(cols.ToList());
     }
 
+    public Column IsIn(List<Column> cols)
+    {
+        List<object> o = [.. cols];
+        return IsIn(o);
+    }
 
     public Column IsIn(List<object> cols)
     {
@@ -1681,8 +1680,10 @@ public class Column
             {
                 expression.UnresolvedFunction.Arguments.Add(col.Expression);
             }
-
-            expression.UnresolvedFunction.Arguments.Add(Functions.Lit(o).Expression);
+            else
+            {
+                expression.UnresolvedFunction.Arguments.Add(Functions.Lit(o).Expression);
+            }
         }
 
         return new Column(expression);
