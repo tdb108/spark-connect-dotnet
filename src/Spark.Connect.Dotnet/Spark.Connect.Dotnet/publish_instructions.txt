@@ -1,0 +1,3 @@
+﻿In package manager console
+nuget push Spark.Connect.Dotnet\Spark.Connect.Dotnet\bin\Debug\phind.Spark.Dotnet.3.5.1-phind.3.nupkg -Source scicomp
+nuget push Spark.Connect.Dotnet\Spark.Connect.Dotnet.GrpcClient\bin\Debug\phind.Spark.Dotnet.GrpcClient.3.5.1-phind.3.nupkg -Source scicomp
