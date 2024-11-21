@@ -37,7 +37,8 @@ public class Column
             {
                 UnresolvedAttribute = new Expression.Types.UnresolvedAttribute
                 {
-                    UnparsedIdentifier = name, PlanId = source.Relation.Common.PlanId
+                    UnparsedIdentifier = name,
+                    PlanId = source.Relation.Common.PlanId
                 }
             };
 
@@ -63,7 +64,8 @@ public class Column
         {
             UnresolvedExtractValue = new Expression.Types.UnresolvedExtractValue
             {
-                Child = Expression, Extraction = Functions.Lit(name).Expression
+                Child = Expression,
+                Extraction = Functions.Lit(name).Expression
             }
         });
 
@@ -98,7 +100,8 @@ public class Column
         {
             Alias = new Expression.Types.Alias
             {
-                Expr = Expression, Name = { name }
+                Expr = Expression,
+                Name = { name }
             }
         };
 
@@ -116,7 +119,8 @@ public class Column
         {
             SortOrder = new Expression.Types.SortOrder
             {
-                Child = Expression, Direction = Expression.Types.SortOrder.Types.SortDirection.Ascending
+                Child = Expression,
+                Direction = Expression.Types.SortOrder.Types.SortDirection.Ascending
             }
         });
     }
@@ -127,7 +131,8 @@ public class Column
         {
             SortOrder = new Expression.Types.SortOrder
             {
-                Child = Expression, Direction = Expression.Types.SortOrder.Types.SortDirection.Descending
+                Child = Expression,
+                Direction = Expression.Types.SortOrder.Types.SortDirection.Descending
             }
         });
     }
@@ -266,13 +271,18 @@ public class Column
     {
         return src.EqualTo(value);
     }
-    
+
     public static Column operator ==(Column src, string value)
     {
         return src.EqualTo(value);
     }
 
     public static Column operator ==(Column src, Column value)
+    {
+        return src.EqualTo(value);
+    }
+
+    public static Column operator ==(Column src, DateTime value)
     {
         return src.EqualTo(value);
     }
@@ -312,11 +322,16 @@ public class Column
         return BinaryOperation(value, "==");
     }
 
+    public Column EqualTo(DateTime value)
+    {
+        return BinaryOperation(value, "==");
+    }
+
     public static Column operator !=(Column src, int value)
     {
         return src.NotEqualTo(value);
     }
-    
+
     public static Column operator !=(Column src, string value)
     {
         return src.NotEqualTo(value);
@@ -347,12 +362,17 @@ public class Column
         return src.NotEqualTo(value);
     }
 
+    public static Column operator !=(Column src, DateTime value)
+    {
+        return src.NotEqualTo(value);
+    }
+
     public Column NotEqualTo(int value)
     {
         var equals = BinaryOperation(value, "==");
         return NotOperation(equals);
     }
-    
+
     public Column NotEqualTo(string value)
     {
         var equals = BinaryOperation(value, "==");
@@ -384,6 +404,12 @@ public class Column
     }
 
     public Column NotEqualTo(Column value)
+    {
+        var equals = BinaryOperation(value, "==");
+        return NotOperation(equals);
+    }
+
+    public Column NotEqualTo(DateTime value)
     {
         var equals = BinaryOperation(value, "==");
         return NotOperation(equals);
@@ -829,6 +855,11 @@ public class Column
         return col.Gt(value);
     }
 
+    public static Column operator >(Column col, DateTime value)
+    {
+        return col.Gt(value);
+    }
+
     public static Column operator <(Column col, int value)
     {
         return col.Lt(value);
@@ -855,6 +886,11 @@ public class Column
     }
 
     public static Column operator <(Column col, Column value)
+    {
+        return col.Lt(value);
+    }
+
+    public static Column operator <(Column col, DateTime value)
     {
         return col.Lt(value);
     }
@@ -889,6 +925,11 @@ public class Column
         return col.Le(value);
     }
 
+    public static Column operator <=(Column col, DateTime value)
+    {
+        return col.Le(value);
+    }
+
     public static Column operator >=(Column col, Column value)
     {
         return col.Ge(value);
@@ -919,6 +960,10 @@ public class Column
         return col.Ge(value);
     }
 
+    public static Column operator >=(Column col, DateTime value)
+    {
+        return col.Ge(value);
+    }
 
     public Column Gt(int value)
     {
@@ -946,6 +991,11 @@ public class Column
     }
 
     public Column Gt(Column value)
+    {
+        return BinaryOperation(value, ">");
+    }
+
+    public Column Gt(DateTime value)
     {
         return BinaryOperation(value, ">");
     }
@@ -980,6 +1030,11 @@ public class Column
         return BinaryOperation(value, "<");
     }
 
+    public Column Lt(DateTime value)
+    {
+        return BinaryOperation(value, "<");
+    }
+
     public Column Ge(int value)
     {
         return BinaryOperation(value, ">=");
@@ -1006,6 +1061,11 @@ public class Column
     }
 
     public Column Ge(Column value)
+    {
+        return BinaryOperation(value, ">=");
+    }
+
+    public Column Ge(DateTime value)
     {
         return BinaryOperation(value, ">=");
     }
@@ -1040,13 +1100,20 @@ public class Column
         return BinaryOperation(value, "<=");
     }
 
+    public Column Le(DateTime value)
+    {
+        return BinaryOperation(value, "<=");
+    }
+
     private Column BinaryOperation(string functionName)
     {
         var expression = new Expression
         {
             UnresolvedFunction = new Expression.Types.UnresolvedFunction
             {
-                FunctionName = functionName, IsUserDefinedFunction = false, IsDistinct = false
+                FunctionName = functionName,
+                IsUserDefinedFunction = false,
+                IsDistinct = false
             }
         };
 
@@ -1061,7 +1128,9 @@ public class Column
         {
             UnresolvedFunction = new Expression.Types.UnresolvedFunction
             {
-                FunctionName = "not", IsUserDefinedFunction = false, IsDistinct = false
+                FunctionName = "not",
+                IsUserDefinedFunction = false,
+                IsDistinct = false
             }
         };
 
@@ -1076,7 +1145,9 @@ public class Column
         {
             UnresolvedFunction = new Expression.Types.UnresolvedFunction
             {
-                FunctionName = functionName, IsUserDefinedFunction = false, IsDistinct = false
+                FunctionName = functionName,
+                IsUserDefinedFunction = false,
+                IsDistinct = false
             }
         };
 
@@ -1108,7 +1179,9 @@ public class Column
         {
             UnresolvedFunction = new Expression.Types.UnresolvedFunction
             {
-                FunctionName = functionName, IsUserDefinedFunction = false, IsDistinct = false
+                FunctionName = functionName,
+                IsUserDefinedFunction = false,
+                IsDistinct = false
             }
         };
 
@@ -1140,7 +1213,9 @@ public class Column
         {
             UnresolvedFunction = new Expression.Types.UnresolvedFunction
             {
-                FunctionName = functionName, IsUserDefinedFunction = false, IsDistinct = false
+                FunctionName = functionName,
+                IsUserDefinedFunction = false,
+                IsDistinct = false
             }
         };
 
@@ -1172,7 +1247,9 @@ public class Column
         {
             UnresolvedFunction = new Expression.Types.UnresolvedFunction
             {
-                FunctionName = functionName, IsUserDefinedFunction = false, IsDistinct = false
+                FunctionName = functionName,
+                IsUserDefinedFunction = false,
+                IsDistinct = false
             }
         };
 
@@ -1204,7 +1281,9 @@ public class Column
         {
             UnresolvedFunction = new Expression.Types.UnresolvedFunction
             {
-                FunctionName = functionName, IsUserDefinedFunction = false, IsDistinct = false
+                FunctionName = functionName,
+                IsUserDefinedFunction = false,
+                IsDistinct = false
             }
         };
 
@@ -1236,7 +1315,9 @@ public class Column
         {
             UnresolvedFunction = new Expression.Types.UnresolvedFunction
             {
-                FunctionName = functionName, IsUserDefinedFunction = false, IsDistinct = false
+                FunctionName = functionName,
+                IsUserDefinedFunction = false,
+                IsDistinct = false
             }
         };
 
@@ -1254,7 +1335,7 @@ public class Column
 
         return new Column(expression);
     }
-    
+
 
     private Column BinaryOperation(bool value, string functionName, bool reverse = false)
     {
@@ -1262,7 +1343,9 @@ public class Column
         {
             UnresolvedFunction = new Expression.Types.UnresolvedFunction
             {
-                FunctionName = functionName, IsUserDefinedFunction = false, IsDistinct = false
+                FunctionName = functionName,
+                IsUserDefinedFunction = false,
+                IsDistinct = false
             }
         };
 
@@ -1287,14 +1370,16 @@ public class Column
 
         return new Column(expression);
     }
-    
+
     private Column BinaryOperation(string value, string functionName, bool reverse = false)
     {
         var expression = new Expression
         {
             UnresolvedFunction = new Expression.Types.UnresolvedFunction
             {
-                FunctionName = functionName, IsUserDefinedFunction = false, IsDistinct = false
+                FunctionName = functionName,
+                IsUserDefinedFunction = false,
+                IsDistinct = false
             }
         };
 
@@ -1303,6 +1388,40 @@ public class Column
             Literal = new Expression.Types.Literal
             {
                 String = value
+            }
+        };
+
+        if (reverse)
+        {
+            expression.UnresolvedFunction.Arguments.Add(literal);
+            expression.UnresolvedFunction.Arguments.Add(Expression);
+        }
+        else
+        {
+            expression.UnresolvedFunction.Arguments.Add(Expression);
+            expression.UnresolvedFunction.Arguments.Add(literal);
+        }
+
+        return new Column(expression);
+    }
+
+    private Column BinaryOperation(DateTime value, string functionName, bool reverse = false)
+    {
+        var expression = new Expression
+        {
+            UnresolvedFunction = new Expression.Types.UnresolvedFunction
+            {
+                FunctionName = functionName,
+                IsUserDefinedFunction = false,
+                IsDistinct = false
+            }
+        };
+
+        var literal = new Expression
+        {
+            Literal = new Expression.Types.Literal
+            {
+                String = value.ToString("yyyy-MM-dd HH:mm:ss.fff")
             }
         };
 
@@ -1331,7 +1450,8 @@ public class Column
         {
             Cast = new Expression.Types.Cast
             {
-                Expr = Expression, Type = type.ToDataType()
+                Expr = Expression,
+                Type = type.ToDataType()
             }
         });
     }
@@ -1347,7 +1467,9 @@ public class Column
         {
             UnresolvedFunction = new Expression.Types.UnresolvedFunction
             {
-                FunctionName = "isnull", IsUserDefinedFunction = false, IsDistinct = false
+                FunctionName = "isnull",
+                IsUserDefinedFunction = false,
+                IsDistinct = false
             }
         };
 
@@ -1355,14 +1477,16 @@ public class Column
 
         return new Column(expression);
     }
-    
+
     public Column IsNotNull()
     {
         var expression = new Expression
         {
             UnresolvedFunction = new Expression.Types.UnresolvedFunction
             {
-                FunctionName = "isnotnull", IsUserDefinedFunction = false, IsDistinct = false
+                FunctionName = "isnotnull",
+                IsUserDefinedFunction = false,
+                IsDistinct = false
             }
         };
 
@@ -1377,7 +1501,9 @@ public class Column
         {
             UnresolvedFunction = new Expression.Types.UnresolvedFunction
             {
-                FunctionName = "endswith", IsUserDefinedFunction = false, IsDistinct = false
+                FunctionName = "endswith",
+                IsUserDefinedFunction = false,
+                IsDistinct = false
             }
         };
 
@@ -1400,7 +1526,9 @@ public class Column
         {
             UnresolvedFunction = new Expression.Types.UnresolvedFunction
             {
-                FunctionName = "startswith", IsUserDefinedFunction = false, IsDistinct = false
+                FunctionName = "startswith",
+                IsUserDefinedFunction = false,
+                IsDistinct = false
             }
         };
 
@@ -1464,7 +1592,8 @@ public class Column
             {
                 UpdateFields = new Expression.Types.UpdateFields
                 {
-                    FieldName = field, StructExpression = lastExpression
+                    FieldName = field,
+                    StructExpression = lastExpression
                 }
             };
 
@@ -1493,7 +1622,9 @@ public class Column
         {
             UnresolvedFunction = new Expression.Types.UnresolvedFunction
             {
-                FunctionName = "like", IsUserDefinedFunction = false, IsDistinct = false
+                FunctionName = "like",
+                IsUserDefinedFunction = false,
+                IsDistinct = false
             }
         };
 
@@ -1516,7 +1647,9 @@ public class Column
         {
             UnresolvedFunction = new Expression.Types.UnresolvedFunction
             {
-                FunctionName = "ilike", IsUserDefinedFunction = false, IsDistinct = false
+                FunctionName = "ilike",
+                IsUserDefinedFunction = false,
+                IsDistinct = false
             }
         };
 
@@ -1539,7 +1672,9 @@ public class Column
         {
             UnresolvedFunction = new Expression.Types.UnresolvedFunction
             {
-                FunctionName = "rlike", IsUserDefinedFunction = false, IsDistinct = false
+                FunctionName = "rlike",
+                IsUserDefinedFunction = false,
+                IsDistinct = false
             }
         };
 
@@ -1562,7 +1697,9 @@ public class Column
         {
             UnresolvedFunction = new Expression.Types.UnresolvedFunction
             {
-                FunctionName = "substr", IsUserDefinedFunction = false, IsDistinct = false
+                FunctionName = "substr",
+                IsUserDefinedFunction = false,
+                IsDistinct = false
             }
         };
 
@@ -1586,7 +1723,7 @@ public class Column
 
         return new Column(expression);
     }
-  
+
     public Column IsIn(params object[] cols)
     {
         return IsIn(cols.ToList());
@@ -1598,7 +1735,9 @@ public class Column
         {
             UnresolvedFunction = new Expression.Types.UnresolvedFunction
             {
-                FunctionName = "in", IsUserDefinedFunction = false, IsDistinct = false
+                FunctionName = "in",
+                IsUserDefinedFunction = false,
+                IsDistinct = false
             }
         };
 
