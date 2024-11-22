@@ -1723,7 +1723,7 @@ public class Column
 
         return new Column(expression);
     }
-
+  
     public Column IsIn(params object[] cols)
     {
         return IsIn(cols.ToList());
