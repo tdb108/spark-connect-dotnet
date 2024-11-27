@@ -91,7 +91,7 @@ public class RequestExecutor : IDisposable
     private CancellationToken GetScheduledCancellationToken()
     {
         _currentCancellationSource = new CancellationTokenSource();
-        _currentCancellationSource.CancelAfter(TimeSpan.FromMinutes(1));
+        _currentCancellationSource.CancelAfter(TimeSpan.FromMinutes(10));
         var token = _currentCancellationSource.Token;
         return token;
     }
@@ -253,6 +253,7 @@ public class RequestExecutor : IDisposable
     {
         if (_operationId == string.Empty)
         { 
+            _operationId = Guid.NewGuid().ToString();
             var request = CreateRequest();
             _logger.Log(GrpcLoggingLevel.Verbose, "Calling Execute Plan on session {0}", _session.SessionId);
             return _session.GrpcClient.ExecutePlan(request, _session.Headers, null, GetScheduledCancellationToken());
@@ -267,7 +268,7 @@ public class RequestExecutor : IDisposable
     
     private ExecutePlanRequest CreateRequest() => new()
     {
-        Plan = _plan, ClientType = _session.ClientType, SessionId = _session.SessionId, UserContext = _session.UserContext, RequestOptions =
+        Plan = _plan, ClientType = _session.ClientType, SessionId = _session.SessionId, UserContext = _session.UserContext, OperationId=_operationId,  RequestOptions =
         {
             new ExecutePlanRequest.Types.RequestOption()
             {
