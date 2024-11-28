@@ -24,16 +24,16 @@ public class RequestExecutor : IDisposable
     private readonly SparkSession _session;
     private readonly Plan _plan;
     private readonly GrpcLogger _logger;
-    
+
     private string _operationId = string.Empty;
     private string _lastResponseId = string.Empty;
     private bool _isComplete = false;
-    
-    private CancellationTokenSource _currentCancellationSource = new ();
+
+    private CancellationTokenSource _currentCancellationSource = new();
 
     private Relation? _relation;
     private DataType? _schema;
-    private readonly List<Row> _rows = new ();
+    private readonly List<Row> _rows = new();
     private StreamingQueryInstanceId? _streamingQueryId;
     private StreamingQueryCommandResult.Types.StatusResult? _streamingResultStatus;
     private string? _streamingQueryName;
@@ -48,7 +48,7 @@ public class RequestExecutor : IDisposable
     }
 
     private RetryableState _retryableState = RetryableState.Processing;
-    
+
     public RequestExecutor(SparkSession session, Plan plan)
     {
         _logger = GetLogger(session);
@@ -76,29 +76,30 @@ public class RequestExecutor : IDisposable
         var task = Task.Run(ExecAsync);
         task.Wait();
     }
-    
+
     public async Task ExecAsync()
     {
         var shouldContinue = true;
-        
+
         while (shouldContinue && !_isComplete)
         {
             shouldContinue = await ProcessRequest();
-            _logger.Log(GrpcLoggingLevel.Verbose, $" Processed Request, continue?: {shouldContinue}");
+            _logger.Log(GrpcLoggingLevel.Verbose, "Processed Request, continue?: {0} {1} {2} {3}", shouldContinue, _session.SessionId, _operationId, _lastResponseId);
         }
     }
-    
+
     private CancellationToken GetScheduledCancellationToken()
     {
+        var cancelTime = int.Parse(_session.Conf.GetOrDefault(SparkDotnetKnownConfigKeys.RequestExecutorCancelTimeout, "45"));
         _currentCancellationSource = new CancellationTokenSource();
-        _currentCancellationSource.CancelAfter(TimeSpan.FromMinutes(10));
+        _currentCancellationSource.CancelAfter(TimeSpan.FromSeconds(cancelTime));
         var token = _currentCancellationSource.Token;
         return token;
     }
-    
+
     private async Task<bool> ProcessRequest()
     {
-        _logger.Log(GrpcLoggingLevel.Verbose, $" Processing Request");
+        _logger.Log(GrpcLoggingLevel.Verbose, "Processing Request {0} {1} {2}", _session.SessionId, _operationId, _lastResponseId);
 
         try
         {
@@ -242,52 +243,83 @@ public class RequestExecutor : IDisposable
 
             if (_retryableState == RetryableState.Processing)
             {
-                throw; 
+                throw;
             }
         }
 
         return true;
     }
-    
+
     private AsyncServerStreamingCall<ExecutePlanResponse> GetResponse()
     {
         if (_operationId == string.Empty)
-        { 
-            _operationId = Guid.NewGuid().ToString();
+        {
             var request = CreateRequest();
-            _logger.Log(GrpcLoggingLevel.Verbose, "Calling Execute Plan on session {0}", _session.SessionId);
+            _logger.Log(GrpcLoggingLevel.Verbose, "Calling Execute Plan on session {0} with operation id {1}", _session.SessionId, _operationId);
             return _session.GrpcClient.ExecutePlan(request, _session.Headers, null, GetScheduledCancellationToken());
         }
         else
         {
             var request = CreateReattachRequest();
-            _logger.Log(GrpcLoggingLevel.Verbose, "Calling ReattachExecute Plan on session {0}", _session.SessionId);
+            _logger.Log(GrpcLoggingLevel.Verbose, "Calling ReattachExecute Plan on session {0} with operation id {1}", _session.SessionId, _operationId);
             return _session.GrpcClient.ReattachExecute(request, _session.Headers, null, GetScheduledCancellationToken());
         }
     }
-    
-    private ExecutePlanRequest CreateRequest() => new()
+
+    private ExecutePlanRequest CreateRequest()
     {
-        Plan = _plan, ClientType = _session.ClientType, SessionId = _session.SessionId, UserContext = _session.UserContext, OperationId=_operationId,  RequestOptions =
+        _operationId = Guid.NewGuid().ToString();
+
+        return new()
         {
-            new ExecutePlanRequest.Types.RequestOption()
+            OperationId = _operationId,
+            Plan = _plan,
+            ClientType = _session.ClientType,
+            SessionId = _session.SessionId,
+            UserContext = _session.UserContext,
+            RequestOptions =
             {
-                ReattachOptions = new ReattachOptions()
+                new ExecutePlanRequest.Types.RequestOption()
                 {
-                    Reattachable = true
+                    ReattachOptions = new ReattachOptions()
+                    {
+                        Reattachable = true
+                    }
                 }
             }
-        }
-    };
+        };
+    }
 
-    private ReattachExecuteRequest CreateReattachRequest() => new()
+    private ReattachExecuteRequest CreateReattachRequest()
     {
-        ClientType = _session.ClientType, SessionId = _session.SessionId, UserContext = _session.UserContext, OperationId = _operationId, LastResponseId = _lastResponseId
-    };
+        if (_lastResponseId == string.Empty)
+        {
+            return new()
+            {
+                ClientType = _session.ClientType,
+                SessionId = _session.SessionId,
+                UserContext = _session.UserContext,
+                OperationId = _operationId
+            };
+        }
+
+        return new()
+        {
+            ClientType = _session.ClientType,
+            SessionId = _session.SessionId,
+            UserContext = _session.UserContext,
+            OperationId = _operationId,
+            LastResponseId = _lastResponseId
+        };
+    }
 
     private ReleaseExecuteRequest CreateReleaseRequest() => new()
     {
-        ClientType = _session.ClientType, SessionId = _session.SessionId, UserContext = _session.UserContext, OperationId = _operationId, ReleaseUntil = new ReleaseExecuteRequest.Types.ReleaseUntil(){ResponseId = _lastResponseId}
+        ClientType = _session.ClientType,
+        SessionId = _session.SessionId,
+        UserContext = _session.UserContext,
+        OperationId = _operationId,
+        ReleaseUntil = new ReleaseExecuteRequest.Types.ReleaseUntil() { ResponseId = _lastResponseId }
     };
 
     private void PrintMetrics(ExecutePlanResponse.Types.Metrics currentMetrics)
@@ -297,15 +329,15 @@ public class RequestExecutor : IDisposable
             if (logging == "true")
             {
                 foreach (var metric in currentMetrics.Metrics_)
-                foreach (var value in metric.ExecutionMetrics)
-                {
-                    _session.Console.WriteLine(
-                        $"metric: {metric.Name}, parent: {metric.Parent} planid: {metric.PlanId}, {value.Key} = {value.Value}");
-                }
+                    foreach (var value in metric.ExecutionMetrics)
+                    {
+                        _session.Console.WriteLine(
+                            $"metric: {metric.Name}, parent: {metric.Parent} planid: {metric.PlanId}, {value.Key} = {value.Value}");
+                    }
             }
         }
     }
-    
+
     private void PrintObservedMetrics(RepeatedField<ExecutePlanResponse.Types.ObservedMetrics> currentObservedMetrics)
     {
         if (_session.Conf.SparkDotnetConnectOptions.TryGetValue(SparkDotnetKnownConfigKeys.PrintMetrics, out string? logging))
@@ -322,9 +354,9 @@ public class RequestExecutor : IDisposable
                 }
             }
         }
-        
+
     }
-    
+
     public void Dispose()
     {
         if (_operationId != string.Empty && _lastResponseId != String.Empty)
@@ -357,4 +389,3 @@ public class RequestExecutor : IDisposable
 
     public StreamingQueryCommandResult.Types.RecentProgressResult? GetStreamingRecentProgress() => _streamingProgress;
 }
-
