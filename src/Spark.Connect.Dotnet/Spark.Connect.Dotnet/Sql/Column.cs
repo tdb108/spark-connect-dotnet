@@ -2815,7 +2815,7 @@ public class Column
 
         return new Column(expression);
     }
-  
+
     /// <summary>
     /// Is the value in the column in the list of values?
     /// </summary>
